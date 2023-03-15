@@ -47,8 +47,8 @@ class Kinetwork(object):
             self.zmethod = self.kinetics.metropolis
             self.smethod = self.kinetics.kawasaki
             
-        # self.nucnorm = np.power((self.s1.length + self.s2.length - self.model.min_nucleation + 1),2)
-        self.nucnorm = (self.s1.length - self.model.min_nucleation + 1)*(self.s2.length - self.model.min_nucleation + 1)
+        self.nucnorm = np.power((self.s1.length + self.s2.length - self.model.min_nucleation + 1),2)
+        # self.nucnorm = (self.s1.length - self.model.min_nucleation + 1)*(self.s2.length - self.model.min_nucleation + 1)
 
         if not clean: 
 
@@ -176,6 +176,7 @@ class Kinetwork(object):
                     self.DG.nodes[mostable.str]['state'] = 'sliding'
                     dgsliding = self.DG.nodes[mostable.str]['fre']
                     fwd, _ = self.smethod('sliding', 0, dgsliding)     
+                    ifwd = fwd
                     if fwd > self.kinetics.zippingrate:
                         fwd = self.kinetics.zippingrate/3            
                     if mostable.pkoverlap > 0:
@@ -184,10 +185,12 @@ class Kinetwork(object):
                         fwdpseudoknot = 0
                     fwdinchleft = fwd*mostable.inchwormingbulge
                     fwdinchright = fwd*mostable.inchwormingbulge
-                    fwd = sum([fwdpseudoknot, fwdinchleft, fwdinchright])
+                    lfwd = sum([fwdpseudoknot, fwdinchleft, fwdinchright])
+                    if lfwd > ifwd:
+                        fwd = ifwd
+                    else: fwd = lfwd 
                     if mostable.totbp == 2:
-                        fwd = fwd/100
-
+                        fwd = fwd
                     if verbose: 
                         dgstring = '{:.3f}'.format(dgsliding)
                         fwdformat = '{:.3e}'.format(fwd)
