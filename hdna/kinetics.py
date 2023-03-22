@@ -222,14 +222,14 @@ class Kinetics(object):
     def ksphere_sano(self):
         # right now just approximate 2D gyradius with 3D one
         a, _ = self.gyradiuses()
-        b    = 5e-5 #took 1 micrometer as the radius, idk 
+        b    = 5e-6 #took 1 micrometer as the radius, idk 
         surf = 4*np.pi*np.power(b*1e-1,2)
         r = (a + b)/a 
         D = self.tdiff_saffdelb()
         coeff1 = (np.power(a + b, 2)/D)
         coeff2 = 2/(1-(np.power(1/r, 2)))
         coeff3 = np.log(r)
-        return coeff1 * ( coeff2 * coeff3 - 1 ) * surf * CONST.NA
+        return coeff1 * ( coeff2 * coeff3 - 1 ) / (surf * CONST.NA)
 
     def kc_chew2019(self, time):
         """

@@ -68,6 +68,7 @@ class Complex(object):
             self.consecutive_nucleations = min(self.l1, self.l2)
             self.total_nucleations = self.consecutive_nucleations
             self.structure = '('*self.s1.length+'+'+')'*self.s2.length
+            self.structureG()
             self.dpxdist = 0
         elif self.state == 'singlestranded':
             self.total_nucleations = 0
