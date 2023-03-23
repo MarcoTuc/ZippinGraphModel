@@ -7,14 +7,10 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'sumofinchandpk44'
+EXPNAME = 'sumofinchandpk55'
 
 notes = """
-
-back to sum of rates for slidings. now try to put a cap on fwd to not let it go higher than the initially proposed value
-removed /100 on length 2 slidings
-Changed zipping and sliding slightly
-sliding up to 2 
+Trying some last times
 """
 
 # Import experimental data from Hertel 
@@ -30,8 +26,9 @@ data.set_index(data['sequences'], inplace=True)
 
 MOD = Model(
     stacking='nostacking',
+    Na=0.15,
     min_nucleation=1)
-MOD.setgeometry(theta=90, phi = 120)
+MOD.setgeometry(theta=120, phi = 120)
  
 MOD.alpha = 1
 MOD.gamma = 0
@@ -49,7 +46,7 @@ with open(f'results/{EXPNAME}/notes.txt', 'w') as savenote:
 # zipping = 7.7e7
 # sliding = 1.35e5 #zipping*np.exp(-(2)/(CONST.R*MOD.kelvin))
 
-zipping = 7.7e7
-sliding = 2e5
+zipping = 8.8e7
+sliding = 4e5
 
 H.run([zipping, sliding])
