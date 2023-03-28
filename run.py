@@ -7,7 +7,7 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'sumofinchandpk55'
+EXPNAME = 'LASTCHECKMASTER6'
 
 notes = """
 Trying some last times
@@ -28,7 +28,7 @@ MOD = Model(
     stacking='nostacking',
     Na=0.15,
     min_nucleation=1)
-MOD.setgeometry(theta=120, phi = 120)
+MOD.setgeometry(theta=90, phi = 120)
  
 MOD.alpha = 1
 MOD.gamma = 0
@@ -43,10 +43,7 @@ with open(f'results/{EXPNAME}/notes.txt', 'w') as savenote:
     savenote.close()
 
 
-# zipping = 7.7e7
-# sliding = 1.35e5 #zipping*np.exp(-(2)/(CONST.R*MOD.kelvin))
-
-zipping = 8.8e7
-sliding = 4e5
+zipping = 8.34e7
+sliding = 5e5
 
 H.run([zipping, sliding])
