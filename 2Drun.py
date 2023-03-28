@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'twodimensional1'
+EXPNAME = 'twodimensionalPORCODIO'
 
 # Import experimental data from Hertel 
 expdata = pd.read_csv('./data/herteldata.csv', names=['sequences', 'experimental'])
@@ -21,22 +21,23 @@ data.set_index(data['sequences'], inplace=True)
 
 MOD = Model(
     space_dimensionality='2D',
+    Na=0.15,
     stacking='nostacking',
     min_nucleation=1)
-MOD.setgeometry(theta=180, phi = 270)
+MOD.setgeometry(theta=90, phi =120)
  
 MOD.alpha = 1
 MOD.gamma = 0
 MOD.kappa = 1
 
 OPT = Options(Nsim=200,
-              runtime=1e-9)
+              runtime=1e-6)
 
 H = HDNA(data, EXPNAME, model=MOD, options=OPT)
 # bounds = [(2e7, 2e8), (2e6, 2e8)]
 # results = dual_annealing(H.run, bounds, maxiter=5, initial_temp=500)
 
-zipping = 7.5e7
-sliding = 1.5e5
+zipping = 8.347
+sliding = 5e5
 
 H.run([zipping, sliding])
