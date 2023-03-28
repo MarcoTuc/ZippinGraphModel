@@ -75,7 +75,7 @@ class HDNA:
         for i, x in savedata[['experimental', 'computational']].iterrows():
             savedata.loc[i, 'error'] = np.power(float(x['experimental']) - float(x['computational']), 2)  
         savedata.to_csv(f"{savefolder}/simulationdata.csv")
-        valplot(savedata, f'scatter_{self.EXPNAME}_run-{self.RUN}', writepath=savefolder, theme='dark')
+        # valplot(savedata, f'scatter_{self.EXPNAME}_run-{self.RUN}', writepath=savefolder, theme='dark')
         self.RUN += 1
 
         return savedata['error'].sum()

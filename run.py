@@ -7,10 +7,12 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'LASTCHECKMASTER6'
+# for i in range(1,10):
+
+EXPNAME = 'ZIPPINGRAPHLASTRUN'    
 
 notes = """
-Trying some last times
+Definitive 
 """
 
 # Import experimental data from Hertel 
@@ -29,12 +31,12 @@ MOD = Model(
     Na=0.15,
     min_nucleation=1)
 MOD.setgeometry(theta=90, phi = 120)
- 
+
 MOD.alpha = 1
 MOD.gamma = 0
 MOD.kappa = 1
 
-OPT = Options(Nsim=5000)
+OPT = Options(Nsim=50000)
 
 H = HDNA(data, EXPNAME, model=MOD, options=OPT)
 
