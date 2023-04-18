@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'twodimensional'
+EXPNAME = 'ZZZtwodimensionalGMORNING'
 
 # Import experimental data from Hertel 
 expdata = pd.read_csv('./data/herteldata.csv', names=['sequences', 'experimental'])
@@ -30,14 +30,14 @@ MOD.alpha = 1
 MOD.gamma = 0
 MOD.kappa = 1
 
-OPT = Options(Nsim=200,
+OPT = Options(Nsim=5000,
               runtime=1e-6)
 
 H = HDNA(data, EXPNAME, model=MOD, options=OPT)
 # bounds = [(2e7, 2e8), (2e6, 2e8)]
 # results = dual_annealing(H.run, bounds, maxiter=5, initial_temp=500)
 
-zipping = 8.347
+zipping = 8.34e7
 sliding = 5e5
 
 H.run([zipping, sliding])

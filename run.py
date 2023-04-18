@@ -9,7 +9,7 @@ from scipy.optimize import dual_annealing
 
 # for i in range(1,10):
 
-EXPNAME = 'ZIPPINGRAPHLASTRUN'    
+EXPNAME = 'ZZZGOODMORNING'    
 
 notes = """
 Definitive 
@@ -36,7 +36,7 @@ MOD.alpha = 1
 MOD.gamma = 0
 MOD.kappa = 1
 
-OPT = Options(Nsim=50000)
+OPT = Options(Nsim=5000)
 
 H = HDNA(data, EXPNAME, model=MOD, options=OPT)
 
