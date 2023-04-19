@@ -16,7 +16,7 @@ class Model(object):
                     Mg=0.0, 
                     celsius=26,
                     standard=False):
-        """ I will use this class for passing experimental conditions """
+        """ class for passing external conditions """
 
         if standard:
             self.setgeometry(120, 270)
@@ -48,7 +48,7 @@ class Model(object):
         self.sliding = sliding
         self.zipping = zipping
 
-        #do not touch 
+        #do not touch - old stuff for the gammascaling modeling trial (not used)
         self.alpha = 1
         self.gamma = 0
         self.kappa = 1
@@ -62,8 +62,8 @@ class Model(object):
                                     magnesium= self.Mg) 
 
         if standard:
-            self.setgeometry(120, 270)
-            self.setparams(zipping=4e7, sliding=1e7, sliding_filter=3)
+            self.setgeometry(90, 120)
+            self.setparams(zipping=8.34e7, sliding=5e5)
 
     def setparams(self, **kwargs):
         for i in kwargs.keys():
@@ -71,14 +71,13 @@ class Model(object):
                 raise ValueError('argument not valid')
         self.__dict__.update(kwargs)
 
-    def setgeometry(self, theta=120, phi=270):
+    def setgeometry(self, theta=90, phi=120):
         self.theta = theta
         self.phi = phi
 
 
 class Options(object):
     def __init__(self, 
-
                 method="direct", 
                 runtime=4e-6, 
                 Nsim=1000,
@@ -112,15 +111,3 @@ class Options(object):
         self.stranditer = stranditer
 
         self.simtqdmdisable = True
-
-
-# DEPRECATED
-# class Geometry(object):
-
-#     """ Here all the physical values needed for 
-#     calculations will be defined and called for
-#     other classes to be used """
-
-#     def __init__(self, azimutal_angle, longitudinal_angle):
-#         self.theta  = azimutal_angle
-#         self.phi    = longitudinal_angle

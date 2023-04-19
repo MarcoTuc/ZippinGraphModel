@@ -4,8 +4,6 @@ import pandas as pd
 import networkx as nx 
 import re
 
-from itertools import pairwise, tee
-
 from .strand import Strand
 from .model import Model
 
@@ -36,13 +34,10 @@ class Complex(object):
         self.l1 = s1.length
         self.l2 = s2.length
 
-        # Think of this as self.initialstructure
-        # I didn't change it because of laziness 
         self.structure = structure
 
         self.dpxdist = dpxdist
 
-        # self.getnupackproperties()
         if not clean:
             self.structureG(self.structure)        
 
@@ -77,12 +72,6 @@ class Complex(object):
         else:
             self.total_nucleations = self.totbasepairs(self.structure)
             self.consecutive_nucleations = self.maxconsbp(self.structure)
-
-        """ These variables are used to say if the current
-        Coils object is duplexed, is offregister or is onregister
-        to be comunicated to classes higher in the hierarchy"""
-
-        # if self.state == 'on_nucleation': self.zipping_trajectory()
     
     def set_state(self, target):
         if target != self.state:
@@ -138,8 +127,7 @@ class Complex(object):
             """ Nupack related properties """
             self.getnupackmodel()
             self.nuStrand1 = nu.Strand(self.s1.sequence, name = 'a')
-            self.nuStrand2 = nu.Strand(self.s2.sequence, name = 'b') # An inversion here is needed because in this program strands are defined as 5-3 against 3-5 but in NUPACK all strands are defined 5-3 and the program takes care to turn them around and so on
-            self.nuComplex = nu.Complex([self.nuStrand1,self.nuStrand2], name = 'c')
+            self.nuStrand2 = nu.Strand(self.s2.sequence, name = 'b')
             j = nu.pfunc(self.nuComplex, self.model.nupack)
             self.duplexG = j[1]
             self.duplexZ = float(j[0])
@@ -150,14 +138,11 @@ class Complex(object):
 ##### General Structure Parsing Methods #####
 #############################################
     
-    """ This is a more general structure parsing routine 
-        borrowed from the chamber class and needed here to
-        parse zipping trajectories which for now don't account
+    """ These are early structure parsing routines
+        borrowed from the old (now deprecated) chamber class and needed 
+        here to parse zipping trajectories which for now don't account
         for wattson-crick base pairing.
-        Since structures here have the normal dot-bracket notation
-        this method doesn't work for ì structures. Maybe I will
-        make a Structure class for handling all these structure
-        related things """
+        These are not used anymore but can be handy sometimes"""
 
     def parse_structure(self, structure, seq_a, seq_b):
         """
@@ -175,7 +160,6 @@ class Complex(object):
         out2 = re.sub(patch_dx,dx,struct_b)
         structureout = out1+"+"+out2
         return structureout
-
 
     def structurecut(self, string1, string2, structure1, structure2):
         cut1 = ''.join([n1 for n1, s1 in zip(string1, structure1) if s1 == '('])

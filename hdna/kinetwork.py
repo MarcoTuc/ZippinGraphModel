@@ -11,16 +11,6 @@ from .kinetics import Kinetics
  
 class Kinetwork(object):
 
-    """
-    Given a chamber it will generate the corresponding
-    Kinetic network to be later passed to the simulator.
-
-    The Zipping Graph is the composition of single zipping graphs ---> See zippingraph() method
-    corresponding to each oncore taken from the chamber.
-    The Sliding Graph is the composition of single sliding graphs ---> See slidingraph() method
-    """
-
-
 ##########################################################################
 
     def __init__(self, model: Model, s1: Strand, s2: Strand, clean=False):
@@ -44,7 +34,7 @@ class Kinetwork(object):
             self.smethod = self.kinetics.kawasaki
         else: 
             self.nmethod = self.kinetics.kawasaki
-            self.zmethod = self.kinetics.kawasaki
+            self.zmethod = self.kinetics.metropolis
             self.smethod = self.kinetics.kawasaki
 
         if self.model.space_dimensionality == '3D':
@@ -52,12 +42,8 @@ class Kinetwork(object):
         if self.model.space_dimensionality == '2D':
             self.nucnorm = (min(self.s1.length,self.s2.length) - self.model.min_nucleation + 1)
 
-        # self.nucnorm = (self.s1.length - self.model.min_nucleation + 1)*(self.s2.length - self.model.min_nucleation + 1)
-
         if not clean: 
-
             self.completegraph()
-
             #get an overview of the network 
             self.possible_states = [ None,
                                     'singlestranded',
@@ -67,7 +53,6 @@ class Kinetwork(object):
                                     'off_nucleation', 
                                     'backfray',
                                     'sliding' ]   
-
             countslist = [list(dict(self.DG.nodes.data('state')).values()).count(state) for state in self.possible_states]
             self.overview = dict(zip(self.possible_states,countslist))
 
@@ -76,9 +61,7 @@ class Kinetwork(object):
 ##########################################################################
 
     def completegraph(self):
-
         self.DG = nx.DiGraph()
-
         self.DG.add_node(self.simplex, 
                          obj = self.ssobj,
                          pairs = 0, 
@@ -91,7 +74,6 @@ class Kinetwork(object):
                          state = 'duplex',
                          dpxdist = 0,
                          fre = self.dxobj.G)
-        
         self.get_graph()
         self.connect_slidings()
 
@@ -100,15 +82,18 @@ class Kinetwork(object):
 ##########################################################################
 
     def get_graph(self, verbose=False):
+        
         self.etaoff = []
         self.sldbranches = []
         ss = self.simplex.split('+')[0] 
         num = min(self.s1.length, self.s2.length)
+        
         for n in range(self.model.min_nucleation, num):
             for i, e1 in enumerate(self.nwise(self.s1.sequence, n)):
                 for j, e2 in enumerate(self.nwise(self.s2.sequence, n)):
                     e1 = self.u(*e1)
                     e2 = self.u(*e2)
+                    
                     if self.model.space_dimensionality == '2D':
                         if i+j == len(ss)-n:
                             state = 'on_nucleation' if n == self.model.min_nucleation else 'zipping'
@@ -117,16 +102,17 @@ class Kinetwork(object):
                         if i+j != len(ss)-n: # --> Condition for checking that the nucleation is off register 
                             state = 'off_nucleation' if n == self.model.min_nucleation else 'backfray' 
                         else: state = 'on_nucleation' if n == self.model.min_nucleation else 'zipping'
+                    
                     if e1 == self.wc(e2[::-1]): 
-                        if verbose: print(self.sab(self.s1.sequence, self.s2.sequence))
-                        spacei = ' '*(i)
-                        spacej = ' '*(j - i + len(ss) - n + 1)
-                        if verbose: print(spacei+spacej.join([e1,e2]))
+                        if verbose: 
+                            print(self.sab(self.s1.sequence, self.s2.sequence))
+                            spacei = ' '*(i)
+                            spacej = ' '*(j - i + len(ss) - n + 1)
+                            print(spacei+spacej.join([e1,e2]))
                         dpxdist = len(ss) - n - i - j
                         l = self.addpar(ss, i, n, '(')
                         r = self.addpar(ss, j, n, ')')
                         trap = self.sab(l,r)
-                        
                         obj = Complex(self.model, self.s1, self.s2, state=state, structure = trap, dpxdist=dpxdist)
                         self.DG.add_node(   trap,
                                             obj = obj, 
@@ -139,7 +125,9 @@ class Kinetwork(object):
                         dgtrap = obj.G
                         fwd, bwd = self.nmethod(state, dgss, dgtrap)
                         fwd = fwd / self.nucnorm
+                        
                         if self.model.normalizeback: bwd = bwd / self.nucnorm
+                        
                         if n == self.model.min_nucleation:
                             self.etaoff.append(dpxdist)
                             self.DG.add_edge(self.simplex, trap, k = fwd, state = state)
@@ -160,7 +148,7 @@ class Kinetwork(object):
                                 fwd, bwd = self.zmethod('zipping', dgtrap, dgduplex)
                                 self.DG.add_edge(trap, self.duplex, k = fwd, state = 'zipping')
                                 self.DG.add_edge(self.duplex, trap, k = bwd, state = 'zipping') 
-        #get unique ids for all branches except branch 0 corresponding to on register nucleation
+
         self.sldbranches = set(self.sldbranches)
         self.sldbranches.remove(0)
 
@@ -168,12 +156,13 @@ class Kinetwork(object):
 ##########################################################################
 
     def connect_slidings(self, verbose=False):
+
         for branch in self.sldbranches:
             leaf = self.filternodes('dpxdist', lambda x: x == branch, self.DG)
-            opposite = self.filternodes('dpxdist', lambda x: x == -branch, self.DG)
             components = nx.connected_components(leaf.to_undirected())
-            oppositecomps = nx.connected_components(opposite.to_undirected())
+            
             for component in components:
+                
                 if len(component) > 1:
                     subleaf = nx.subgraph(self.DG, list(component))
                     mostable = Structure(list(self.filternodes('fre', min, subleaf).nodes())[0])
@@ -181,15 +170,18 @@ class Kinetwork(object):
                     dgsliding = self.DG.nodes[mostable.str]['fre']
                     fwd, _ = self.smethod('sliding', 0, dgsliding)     
                     ifwd = fwd
+                    
                     if fwd > self.kinetics.zippingrate:
                         fwd = self.kinetics.zippingrate/3            
                     if mostable.pkoverlap > 0:
                         fwdpseudoknot = fwd*mostable.pkoverlap
                     else: 
                         fwdpseudoknot = 0
+                    
                     fwdinchleft = fwd*mostable.inchwormingbulge
                     fwdinchright = fwd*mostable.inchwormingbulge
                     lfwd = sum([fwdpseudoknot, fwdinchleft, fwdinchright])
+                    
                     if lfwd > ifwd:
                         fwd = ifwd
                     else: fwd = lfwd 
@@ -204,12 +196,6 @@ class Kinetwork(object):
 
                     self.DG.add_edge(mostable.str, self.duplex, k = fwd, state = 'sliding')
                     self.DG.add_edge(self.duplex, mostable.str, k = 0, state = 'sliding')
-                    
-                    # for oppo in oppositecomps:
-                    #     if len(oppo) > 1:
-                    #         suboppo = nx.subgraph(self.DG, list(oppo))
-                    #         mostoppo = Structure(list(self.filternodes('fre', min, suboppo).nodes())[0])
-                    #         if 
 
 
 ##########################################################################
@@ -302,9 +288,4 @@ class Kinetwork(object):
                 next(iter, None)
         return zip(*iterators)
 
-
-
-class FatalError(Exception):
-    def __init__(self, message):
-        super().__init__(message)
 

@@ -7,7 +7,6 @@ import numpy as np
 from scipy.stats import expon
 
 import juliacall
-# print("Julia has",juliacall.Main.seval("Threads.nthreads()"),"threads")
 
 jl = juliacall.newmodule("hDNA")
 
@@ -50,8 +49,6 @@ class Simulator(object):
             self.DIR = f'./{self.options.results_dir}/simulations/{self.options.stranditer}_{self.kinet.s1.sequence}'
 
     def add_species(self, verbose=False):
-        """DONE"""
-        # self.biosim <= jl.Species(self.tl(str(list(self.Graph.nodes())[0])), self.initialamount)
         ss = self.tl(self.sss) 
         self.biosim <= jl.Species(ss, self.initialamount)
         for node in list(self.Graph.nodes())[1:]:
@@ -83,7 +80,6 @@ class Simulator(object):
     def simulation(self):
         """ run the simulation and return the results """
         return jl.simulate(self.biosim, self.method, tfinal = self.options.runtime)
-        # return {'c':jl.hcat(*sim.u).__array__(), 't':sim.t} OLD TRANSLATION TO DICTIONARY 
     
 
     def ensemble(self):
@@ -127,7 +123,6 @@ class Simulator(object):
             traj = self.get_trajectory(sim, weightlift=True, savetraj=True)
             kcoll = self.kinet.kinetics.dlrate * self.kinet.kinetics.geonuc()
             collisiontime = expon(scale=1/kcoll).rvs()
-            # print(collisiontime)
             try: 
                 duplexationtime = sim.t[jl.findfirst(jl.isone, sim[self.duplexindex,:])-1]
                 fpts.append(collisiontime + duplexationtime)
@@ -146,7 +141,7 @@ class Simulator(object):
         return fpts, 1/np.mean(fpts)
     
 
-    def get_trajectory(self, simulation, weightlift=True, savetraj=False): #TODO REDO IT MORE EFFICIENTLY (?)
+    def get_trajectory(self, simulation, weightlift=True, savetraj=False):
         
         """ Create a method for appending a simulation trajectory to each simulation result
             Over than being pretty this is a good way to see inside simulations what's happening
@@ -173,40 +168,8 @@ class Simulator(object):
                 if states[i_next] == self.duplex:
                     if savetraj: self.trajectory.append(states[i_next])
                     break
-        # else:
-        #     for i, (step, next) in enumerate(pairwise(simulation)):
-        #         if i == 0:
-        #             i_step = jl.findall(jl.isone, step)[0] - 1
-        #             i_next = jl.findall(jl.isone, next)[0] - 1
-        #         else:
-        #             i_step = i_next
-        #             i_next = jl.findall(jl.isone, next)[0] - 1
-        #         if savetraj: self.trajectory.append(states[i_step])
-        #         self.BSG[states[i_step]][states[i_next]]['weight'] += 1
-        #         if states[i_next] == self.duplex:
-        #             if savetraj: self.trajectory.append(states[i_next])
-        #             break
-            # Check for void trajectories - DISABLED 
-            # if len(index) != 1: 
-            #     if len(index) == 0: 
-            #         # Cannot have void states (strand always exists)
-            #         raise TrajectoryError(f'void state detected at step {step}')
-            #     else:     
-            #         # Cannot have more than one state at the same time 
-            #         raise TrajectoryError(f'simultaneous states detected in step {step} at indices {[*list(index)]}')
-            # index = index[0] - 1
-        # if not self.options.rates_info:
         return self.trajectory
-        # FRE = []
-        # rates = []
-        # names = []
-        # for i, step in enumerate(self.trajectory[:-1], start=1):
-        #     FRE.append(self.BSG.nodes[str(step)]['obj'].G)
-        #     rates.append('{:e}'.format(self.BSG.edges[str(step),str(self.trajectory[i])]['rate']))
-        #     names.append(self.BSG.edges[str(step),str(self.trajectory[i])]['name'])
-        # DF = pd.DataFrame([self.trajectory, FRE, rates, names], 
-        #                     index=['trajectory', 'DG', 'next step rate', 'step name']).T
-        # return DF
+
 
     def BSGraph(self, verbose=False):
         """ Return a digraph post-biosim to see if it matches with the pre-biosim graph.
@@ -228,8 +191,7 @@ class Simulator(object):
             for key in list(self.Graph.nodes[g].keys()):
                 if verbose: print(self.Graph.nodes[g][key])
                 self.BSG.nodes[g][key] = self.Graph.nodes[g][key]
-        # loop to remove reaction number and get name as the original reaction state 
-        # and add an empty weight 
+        # loop to remove reaction number and get name as the original reaction state and add an empty weight 
         for edge in self.BSG.edges.data():
             edge[2]['state'] = edge[2]['name'].split('-')[0]
             edge[2]['weight'] = 1
@@ -265,16 +227,7 @@ class Simulator(object):
             if both: 
                 self.graphsaveformat(DGsave)
                 nx.write_gexf(DGsave,f'{PATH}/{self.options.stranditer}_{self.kinet.s1.sequence}_graph_K.gexf')
-            # except:
-            #     self.BSGraph() 
-            #     for n in self.BSG.nodes.data():
-            #         n[1]['obj'] = str(type(n[1]['obj']))
-            #     try: os.makedirs(PATH)
-            #     except FileExistsError: pass 
-            #     self.graphsaveformat(self.BSG)
-            #     nx.write_gexf(self.BSG,f'{PATH}/{self.options.stranditer}_{self.kinet.s1.sequence}_graph_S.gexf')
-            #     if both: nx.write_gexf(self.kinet.DG,f'{path}/{self.options.stranditer}_{self.kinet.s1.sequence}_graph_K.gexf')
-        
+
                 
     def mfpt(self, ensemble):
         fpts = self.fpts(ensemble)
@@ -333,12 +286,3 @@ class Simulator(object):
         df.rename(columns={np.int64(0):'values'}, inplace=True)
         df.index.rename('states', inplace=True)
         df.to_csv(f'{path}/{name}.csv')
-
-    ########################
-    ### Property Methods ###
-    ########################
-
-
-class TrajectoryError(Exception):
-    def __init__(self, message):
-        super().__init__(message)

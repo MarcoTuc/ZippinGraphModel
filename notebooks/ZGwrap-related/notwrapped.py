@@ -7,6 +7,8 @@ from hdna import *
 from conf import * 
 from scipy.stats import gamma
 
+RESULTS_DIR = 'results/expname'
+
 # Import experimental data from Hertel 
 expdata = pd.read_csv('./data/herteldata.csv', names=['seq', 'expvalue'])
 # Clean the dataframe 

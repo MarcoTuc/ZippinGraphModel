@@ -5,7 +5,6 @@ from .strand import Strand
 from .params import *
 
 
-
 class Kinetics(object):
     def __init__(self, model: Model, s1: Strand, s2: Strand):
         
@@ -156,7 +155,8 @@ class Kinetics(object):
         self.vD1 = self.einsmol_spherical(self.size1)
         self.vD2 = self.einsmol_spherical(self.size2)
     
-    ##################### Polymer Physics
+    ########################## Polymer Physics
+
     def gyradiuses(self):
         lambda_0 = (self.simplex_geometry['persistence_length']*self.simplex_geometry['basepairdistance'])/3
         self.gr1 = np.sqrt(self.s1.length*lambda_0)
@@ -175,20 +175,16 @@ class Kinetics(object):
     def px_idealchain(x):
         return ((3/2*np.pi)**(3/2))*np.exp(-1.5*(x**2))
     
-    # Check dnapolymer.py inside ./oldsequentialcode/polymer 
-    # for all the other polymer physics related functions
-
     # >>>>>>>>------------------- 3D DIFFUSION LIMITED RATES -----------------------<<<<<<<<<<<<<<
     def diffusionlimited(self, kind='ppi'):
         """ Smoluchowski 1916 classical formula """
+        dc = 1e-3 #dimensional correction from cubic cm to cubic dm to get 1/(M*s) kinetic rates
         if kind == 'ppi':  
             self.ppi_diffusivities()
-            cm2dmcubic = 1e-3 #dimensional correction from cubic cm to cubic dm to get 1/(M*s) kinetic rates
-            self.dlrate = self.phys['Na']*4*np.pi*(self.pD1+self.pD2)*(self.gr1+self.gr2) * cm2dmcubic
+            self.dlrate = self.phys['Na']*4*np.pi*(self.pD1+self.pD2)*(self.gr1+self.gr2) * dc
             return self.dlrate
         elif kind == 'vanilla':
             self.vanilla_diffusivities()
-            dc = 1e-3 #dimensional correction from cubic cm to cubic dm to get 1/(M*s) kinetic rates
             self.dlrate = self.phys['Na']*4*np.pi*(self.vD1+self.vD2)*(self.size1+self.size2) * dc
             return self.dlrate
         else: raise ValueError(f'{kind} not implemented')
@@ -228,9 +224,9 @@ class Kinetics(object):
     # >>>>>>>>------------------- 2D DIFFUSION LIMITED KINETICD -----------------------<<<<<<<<<<<<<<
     
     def ksphere_sano(self):
-        # right now just approximate 2D gyradius with 3D one
+        # 2D gyradius approximated as 3D one for short strands
         a, _ = self.gyradiuses()
-        b    = 5e-5 #took 1 micrometer as the radius, idk 
+        b    = 5e-5 
         surf = 4*np.pi*np.power(b*1e-1,2)
         r = (a + b)/a 
         D = self.tdiff_saffdelb()
@@ -253,6 +249,7 @@ class Kinetics(object):
         h2 = (np.power(CONST.GAMMA,2) - np.power(np.pi,2)/6)/np.power(z,3)
         Kchew = 4*np.pi*D*((1/z) - CONST.GAMMA*(1/np.power(z,2)) - h2)
         return Kchew * 1e-2 * CONST.NA
+    
     def kc_noyes(self, time):
         """
         Diffusion-limited rate from Noyes Theory
@@ -265,6 +262,7 @@ class Kinetics(object):
         higher2 = ((1/6)*np.power(np.pi,2) - np.power(CONST.GAMMA,2))*(1/np.power(z,3))
         Kn = 4*np.pi*D*((1/z) - higher1 - higher2) 
         return Kn * 1e-2 * CONST.NA
+    
     def kc_torney(self, time):
         D = self.tdiff_saffdelb()
         ln = np.log(4*D*time/np.power(sum(self.gyradiuses()),2))
@@ -286,8 +284,5 @@ class Kinetics(object):
             if 0 <= p_circular <= 1 : return self.closedconfscaling(p_circular) / ke
             else: raise ValueError("need to input a 'p_circular' value in the [0,1] interval")
         else: return forward / ke
-    
-    
-    def avgunzip(self):
-        return self.zippingrate*np.exp((-2)/(CONST.R*self.model.kelvin))
+
 

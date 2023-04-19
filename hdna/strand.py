@@ -8,7 +8,6 @@ class Strand(object):
 
     def __init__(self, model: Model, sequence: str, direction=None):
 
-        #TODO: Check if the sequence has non WT stuff 
         if type(model) != Model:
             raise TypeError("Model must be an instance of hdna.Model")
         self.model = model
@@ -28,17 +27,16 @@ class Strand(object):
 
         self.length = len(sequence)
 
-    def secstruct(self):
+    def secstruct(self): # -> TODO
         """ method for getting the most expressed 
         secondary structures. These structures will be objects
         themselves with their own shit """       
         pass
 
-    def dimension(self):
-        """ I don't remember what I wanted to do here"""
-        pass
-
-    def nucleotides(self):
+    def dimension(self): # -> TODO
+        """ Embed dimensionality in the strand to account for future
+            modeling capabilities of 2D-3D surface hybridization 
+            like done in DNA surface probe solution target scenarios"""
         pass
     
     def cut(self, start, stop):
@@ -58,8 +56,6 @@ class Strand(object):
     @property
     def invert(self):
         return Strand(self.model, self.sequence[::-1])
-
-   
 
 
 class Structure(object):
@@ -202,7 +198,6 @@ class Structure(object):
             self.pktail_r = 0
 
     def maxtails(self):
-        # for tail in [self.tail_ll, self.tail_lr, self.tail_rl, self.tail_rr]:
         if self.tail_ll > self.tail_lr:
             self.maxtail_l = 'll'
         elif self.tail_ll < self.tail_lr:
@@ -234,7 +229,7 @@ class Structure(object):
             return normoverlap 
 
     def overlappingspheres(self):
-        d  = self.bulk * DXGEO.MONODIST #stiff rod bro (persistence duplex >> persistence simplex)
+        d  = self.bulk * DXGEO.MONODIST #(persistence duplex >> persistence simplex)
         if self.tail_ll > 0 and self.tail_rl > 0:
             # left up and right low spheres 
             r1 = np.sqrt(self.tail_ll*(SXGEO.MONODIST**2))
@@ -254,13 +249,13 @@ class Structure(object):
 
     def inchwormingtails(self):
         if self.tail_ll != 0 and self.tail_rr != 0:
-            iw_left = (self.tail_ll+self.tail_rr)/(2*self.length*abs(self.register))  #0.5*abs(self.tail_ll+self.tail_rr)/abs(self.register)
+            iw_left = (self.tail_ll+self.tail_rr)/(2*self.length*abs(self.register)) 
         else: iw_left = 0
         if self.tail_lr != 0 and self.tail_rl != 0:
-            iw_right = (self.tail_lr+self.tail_rl)/(2*self.length*abs(self.register)) #0.5*abs(self.tail_lr+self.tail_rl)/abs(self.register)
+            iw_right = (self.tail_lr+self.tail_rl)/(2*self.length*abs(self.register)) 
         else: iw_right = 0 
-        self.iw_left = iw_left          #abs(self.tail_ll+self.tail_rr)/iw_left #what about a product here
-        self.iw_right = iw_right        #abs(self.tail_lr+self.tail_rl)/iw_right #what about a product here
+        self.iw_left = iw_left       
+        self.iw_right = iw_right        
         return self.iw_left, self.iw_right
     
     @property
