@@ -1,19 +1,17 @@
 
 import pandas as pd 
 import numpy as np 
-
 from hdna import *
 from tqdm import tqdm
-
 from scipy.optimize import dual_annealing
 
-# for i in range(1,10):
 
-EXPNAME = 'ZZZEXPORT23D'    
+EXPNAME = 'rosetta2D'    
 
 notes = """
 Definitive 
 """
+
 
 # Import experimental data from Hertel 
 expdata = pd.read_csv('./data/herteldata.csv', names=['sequences', 'experimental'])
@@ -26,19 +24,18 @@ data = expdata.copy().iloc[:limit]
 data['index'] = data.index 
 data.set_index(data['sequences'], inplace=True)
 
+
 MOD = Model(
+    space_dimensionality='2D',
     stacking='nostacking',
     Na=0.15,
     min_nucleation=1)
 MOD.setgeometry(theta=90, phi = 120)
 
-MOD.alpha = 1
-MOD.gamma = 0
-MOD.kappa = 1
-
 OPT = Options(Nsim=5000)
 
 H = HDNA(data, EXPNAME, model=MOD, options=OPT)
+
 
 with open(f'results/{EXPNAME}/notes.txt', 'w') as savenote:
     savenote.write(notes)

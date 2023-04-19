@@ -1,11 +1,6 @@
-/HELPER
-/virtualenvs
 /results
 /__pycache__
 /.vscode
-/filesdump
-/results_OLD
-/hdna/graveyard
-/optimization
 /notebooks/results
 /LIDA/results
+/hdna/__pycache__
