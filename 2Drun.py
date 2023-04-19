@@ -6,7 +6,7 @@ from tqdm import tqdm
 
 from scipy.optimize import dual_annealing
 
-EXPNAME = 'ZZZtwodimensionalGMORNING'
+EXPNAME = 'ZZZEXPORT22D'
 
 # Import experimental data from Hertel 
 expdata = pd.read_csv('./data/herteldata.csv', names=['sequences', 'experimental'])
@@ -21,7 +21,7 @@ data.set_index(data['sequences'], inplace=True)
 
 MOD = Model(
     space_dimensionality='2D',
-    Na=0.15,
+    # Na=0.15,
     stacking='nostacking',
     min_nucleation=1)
 MOD.setgeometry(theta=90, phi =120)

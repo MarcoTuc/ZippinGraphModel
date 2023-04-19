@@ -9,7 +9,7 @@ from scipy.optimize import dual_annealing
 
 # for i in range(1,10):
 
-EXPNAME = 'ZZZGOODMORNING'    
+EXPNAME = 'ZZZEXPORT23D'    
 
 notes = """
 Definitive 

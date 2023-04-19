@@ -44,10 +44,14 @@ class Kinetwork(object):
             self.smethod = self.kinetics.kawasaki
         else: 
             self.nmethod = self.kinetics.kawasaki
-            self.zmethod = self.kinetics.metropolis
+            self.zmethod = self.kinetics.kawasaki
             self.smethod = self.kinetics.kawasaki
-            
-        self.nucnorm = np.power((self.s1.length + self.s2.length - self.model.min_nucleation + 1),2)
+
+        if self.model.space_dimensionality == '3D':
+            self.nucnorm = np.power((self.s1.length + self.s2.length - self.model.min_nucleation + 1),2)
+        if self.model.space_dimensionality == '2D':
+            self.nucnorm = (min(self.s1.length,self.s2.length) - self.model.min_nucleation + 1)
+
         # self.nucnorm = (self.s1.length - self.model.min_nucleation + 1)*(self.s2.length - self.model.min_nucleation + 1)
 
         if not clean: 

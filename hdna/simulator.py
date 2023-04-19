@@ -4,6 +4,7 @@ import os
 import networkx as nx
 import pandas as pd 
 import numpy as np
+from scipy.stats import expon
 
 import juliacall
 # print("Julia has",juliacall.Main.seval("Threads.nthreads()"),"threads")
@@ -124,12 +125,16 @@ class Simulator(object):
         for i in bar:
             sim = jl.simulate(state, model, self.method, tfinal = self.options.runtime)
             traj = self.get_trajectory(sim, weightlift=True, savetraj=True)
+            kcoll = self.kinet.kinetics.dlrate * self.kinet.kinetics.geonuc()
+            collisiontime = expon(scale=1/kcoll).rvs()
+            # print(collisiontime)
             try: 
-                fpts.append(sim.t[jl.findfirst(jl.isone, sim[self.duplexindex,:])-1])
+                duplexationtime = sim.t[jl.findfirst(jl.isone, sim[self.duplexindex,:])-1]
+                fpts.append(collisiontime + duplexationtime)
                 if i % int(self.options.Nsim/30) == 0:
                     pd.DataFrame(traj).to_csv(f'{DIR_TRAJ}/run{i+1}.csv')
             except TypeError:
-                fpts.append(self.options.runtime)
+                fpts.append(collisiontime + self.options.runtime)
                 pd.DataFrame(traj).to_csv(f'{DIR_TRAJ_FAIL}/run{i+1}.csv')
                 failed += 1
 

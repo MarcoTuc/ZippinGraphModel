@@ -47,7 +47,15 @@ class Kinetics(object):
             self.diffusionlimited()
             self.geometric_rate()
         elif self.model.space_dimensionality == '2D':
+            self.ksphere_sano()
             self.georate = self.surfgeorate()
+
+
+    def geonuc(self):
+        if self.model.space_dimensionality == '3D':
+            return self.bulksteric()
+        elif self.model.space_dimensionality == '2D':
+            return self.surfacesteric()
 
 
     """ ------------- ZIPPING RELATED -----------------"""
@@ -100,7 +108,7 @@ class Kinetics(object):
                      'backfray':    self.zippingrate,
                      'duplex':      self.zippingrate,
                      'sliding':     self.slidingrate,
-                     'on_nucleation':   self.georate,
+                     'on_nucleation':   self.georate if self.space == '3D' else self.zippingrate,
                      'off_nucleation':  self.georate}
         ka = ratesdict[kind]
         #kf
@@ -222,14 +230,15 @@ class Kinetics(object):
     def ksphere_sano(self):
         # right now just approximate 2D gyradius with 3D one
         a, _ = self.gyradiuses()
-        b    = 5e-6 #took 1 micrometer as the radius, idk 
+        b    = 5e-5 #took 1 micrometer as the radius, idk 
         surf = 4*np.pi*np.power(b*1e-1,2)
         r = (a + b)/a 
         D = self.tdiff_saffdelb()
         coeff1 = (np.power(a + b, 2)/D)
         coeff2 = 2/(1-(np.power(1/r, 2)))
         coeff3 = np.log(r)
-        return coeff1 * ( coeff2 * coeff3 - 1 ) / (surf * CONST.NA)
+        self.dlrate = (1/(coeff1 * ( coeff2 * coeff3 - 1 ))) * surf * CONST.NA * 1e-2
+        return self.dlrate
 
     def kc_chew2019(self, time):
         """
